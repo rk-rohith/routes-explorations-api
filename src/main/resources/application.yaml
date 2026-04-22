@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: routes-explorations-api
+
+  datasource:
+    url: jdbc:h2:file:./data/routes-db
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: never
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
