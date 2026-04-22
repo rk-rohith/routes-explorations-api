@@ -1,0 +1,12 @@
+com\routes\explorations\repository\CategoryRepository.class
+com\routes\explorations\controller\CategoryController.class
+com\routes\explorations\controller\RegionController.class
+com\routes\explorations\repository\RegionRepository.class
+com\routes\explorations\entity\Routes.class
+com\routes\explorations\controller\DestinationController.class
+com\routes\explorations\entity\Region.class
+com\routes\explorations\repository\RoutesRepository.class
+com\routes\explorations\entity\Category.class
+com\routes\explorations\repository\DestinationsRepository.class
+com\routes\explorations\entity\Destinations.class
+com\routes\explorations\RoutesExplorationsApiApplication.class
