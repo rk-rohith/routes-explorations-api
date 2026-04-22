@@ -3,19 +3,21 @@ spring:
     name: routes-explorations-api
 
   datasource:
-    url: jdbc:h2:file:./data/routes-db
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   sql:
     init:
       mode: never
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     defer-datasource-initialization: true
 
