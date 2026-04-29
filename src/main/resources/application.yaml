@@ -1,6 +1,17 @@
+server:
+  servlet:
+    context-path: /routesandexplore/api/store
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always
+
 spring:
   application:
     name: routes-explorations-api
+  web:
+    resources:
+      add-mappings: true
 
   datasource:
     url: ${DATABASE_URL}
@@ -18,5 +29,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+    show-sql: false
+
 

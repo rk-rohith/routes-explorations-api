@@ -5,38 +5,35 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "categories", schema = "routesandexplore")
+@Table(name = "gallery_images", schema = "routesandexplore")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class GalleryImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "destination_id")
+    private Destinations destination;
 
-    @Column(nullable = false, length = 120, unique = true)
-    private String slug;
-
-    @Column(nullable = true, length = 10)
-    private String emoji;
-
-    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Column(name = "alt_text", length = 300)
+    private String altText;
+
+    @Column(name = "is_moments", nullable = false)
+    private Boolean isMoments = false;
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
-
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DestinationCategory> destinationCategories;
 
     @PrePersist
     protected void onCreate() {

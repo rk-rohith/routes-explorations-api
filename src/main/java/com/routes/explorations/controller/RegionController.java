@@ -2,13 +2,8 @@ package com.routes.explorations.controller;
 
 import com.routes.explorations.entity.Region;
 import com.routes.explorations.repository.RegionRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,82 +11,90 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/regions")
-@Tag(name = "Region Management", description = "APIs for managing regions")
+@RequestMapping("/regions")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@Slf4j
 public class RegionController {
 
-    @Autowired
-    private RegionRepository regionRepository;
+    private final RegionRepository regionRepository;
+
 
     @GetMapping
-    @Operation(summary = "Get all regions", description = "Retrieve a list of all regions")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved all regions")
     public List<Region> getAllRegions() {
-        return regionRepository.findAll();
+        log.info("Fetching all regions");
+        List<Region> regions = regionRepository.findAll();
+        log.info("Retrieved {} regions", regions.size());
+        return regions;
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get region by ID", description = "Retrieve a specific region by its ID")
-    @ApiResponse(responseCode = "200", description = "Region found")
-    @ApiResponse(responseCode = "404", description = "Region not found")
     public ResponseEntity<Region> getRegionById(@PathVariable Long id) {
+        log.info("Fetching region with ID: {}", id);
         Optional<Region> region = regionRepository.findById(id);
+        if (region.isPresent()) {
+            log.info("Region found with ID: {}", id);
+        } else {
+            log.warn("Region not found with ID: {}", id);
+        }
+        return region.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<Region> getRegionBySlug(@PathVariable String slug) {
+        log.info("Fetching region by slug: {}", slug);
+        Optional<Region> region = regionRepository.findBySlug(slug);
+        if (region.isPresent()) {
+            log.info("Region found with slug: {}", slug);
+        } else {
+            log.warn("Region not found with slug: {}", slug);
+        }
         return region.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Create a new region", description = "Save a new region to the database")
-    @ApiResponse(responseCode = "200", description = "Region created successfully",
-            content = @Content(mediaType = "application/json", 
-                    schema = @Schema(implementation = Region.class),
-                    examples = @ExampleObject(value = "{\"id\": 4, \"name\": \"West\", \"description\": \"Western region\"}")))
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Region.class),
-                    examples = @ExampleObject(value = "{\"name\": \"West\", \"description\": \"Western region\"}")))
-    public ResponseEntity<Region> saveRegion(
-            @RequestBody Region region) {
+    public ResponseEntity<Region> saveRegion(@RequestBody Region region) {
+        log.info("Creating new region: {}", region.getName());
         Region savedRegion = regionRepository.save(region);
+        log.info("Region created successfully with ID: {}", savedRegion.getId());
         return ResponseEntity.ok(savedRegion);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a region", description = "Update an existing region by its ID")
-    @ApiResponse(responseCode = "200", description = "Region updated successfully")
-    @ApiResponse(responseCode = "404", description = "Region not found")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Region.class),
-                    examples = @ExampleObject(value = "{\"name\": \"West Updated\", \"description\": \"Updated western region\"}")))
     public ResponseEntity<Region> updateRegion(
             @PathVariable Long id,
             @RequestBody Region regionDetails) {
+        log.info("Updating region with ID: {}", id);
         Optional<Region> region = regionRepository.findById(id);
 
         if (region.isEmpty()) {
+            log.warn("Region not found for update with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
         Region existingRegion = region.get();
         existingRegion.setName(regionDetails.getName());
-        existingRegion.setDescription(regionDetails.getDescription());
+        existingRegion.setSlug(regionDetails.getSlug());
+        existingRegion.setImageUrl(regionDetails.getImageUrl());
+        existingRegion.setStatus(regionDetails.getStatus());
 
         Region updatedRegion = regionRepository.save(existingRegion);
+        log.info("Region updated successfully with ID: {}", id);
         return ResponseEntity.ok(updatedRegion);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a region", description = "Delete a region by its ID")
-    @ApiResponse(responseCode = "204", description = "Region deleted successfully")
-    @ApiResponse(responseCode = "404", description = "Region not found")
     public ResponseEntity<Void> deleteRegion(@PathVariable Long id) {
+        log.info("Deleting region with ID: {}", id);
         Optional<Region> region = regionRepository.findById(id);
 
         if (region.isEmpty()) {
+            log.warn("Region not found for deletion with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
         regionRepository.deleteById(id);
+        log.info("Region deleted successfully with ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 }

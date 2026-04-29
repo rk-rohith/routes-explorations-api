@@ -2,13 +2,8 @@ package com.routes.explorations.controller;
 
 import com.routes.explorations.entity.Category;
 import com.routes.explorations.repository.CategoryRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,83 +11,75 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/categories")
-@Tag(name = "Category Management", description = "APIs for managing categories")
+@RequestMapping("/categories")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@Slf4j
 public class CategoryController {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
     @GetMapping
-    @Operation(summary = "Get all categories", description = "Retrieve a list of all categories")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved all categories")
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        log.info("Fetching all categories");
+        List<Category> categories = categoryRepository.findAll();
+        log.info("Retrieved {} categories", categories.size());
+        return categories;
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get category by ID", description = "Retrieve a specific category by its ID")
-    @ApiResponse(responseCode = "200", description = "Category found")
-    @ApiResponse(responseCode = "404", description = "Category not found")
     public ResponseEntity<Category> getCategoryById(@PathVariable Long id) {
+        log.info("Fetching category with ID: {}", id);
         Optional<Category> category = categoryRepository.findById(id);
+        if (category.isPresent()) {
+            log.info("Category found with ID: {}", id);
+        } else {
+            log.warn("Category not found with ID: {}", id);
+        }
         return category.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Create a new category", description = "Save a new category to the database")
-    @ApiResponse(responseCode = "200", description = "Category created successfully",
-            content = @Content(mediaType = "application/json", 
-                    schema = @Schema(implementation = Category.class),
-                    examples = @ExampleObject(value = "{\"id\": 4, \"name\": \"Beach\", \"description\": \"Beach activities and attractions\"}")))
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Category.class),
-                    examples = @ExampleObject(value = "{\"name\": \"Beach\", \"description\": \"Beach activities and attractions\"}")))
     public ResponseEntity<Category> saveCategory(
             @RequestBody Category category) {
+        log.info("Creating new category: {}", category.getName());
         Category savedCategory = categoryRepository.save(category);
+        log.info("Category created successfully with ID: {}", savedCategory.getId());
         return ResponseEntity.ok(savedCategory);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a category", description = "Update an existing category by its ID")
-    @ApiResponse(responseCode = "200", description = "Category updated successfully")
-    @ApiResponse(responseCode = "404", description = "Category not found")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true,
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Category.class),
-                    examples = @ExampleObject(value = "{\"name\": \"Beach Updated\", \"description\": \"Updated beach activities\"}")))
     public ResponseEntity<Category> updateCategory(
             @PathVariable Long id,
             @RequestBody Category categoryDetails) {
+        log.info("Updating category with ID: {}", id);
         Optional<Category> category = categoryRepository.findById(id);
 
         if (category.isEmpty()) {
+            log.warn("Category not found for update with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
         Category existingCategory = category.get();
         existingCategory.setName(categoryDetails.getName());
-        existingCategory.setDescription(categoryDetails.getDescription());
 
         Category updatedCategory = categoryRepository.save(existingCategory);
+        log.info("Category updated successfully with ID: {}", id);
         return ResponseEntity.ok(updatedCategory);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a category", description = "Delete a category by its ID")
-    @ApiResponse(responseCode = "204", description = "Category deleted successfully")
-    @ApiResponse(responseCode = "404", description = "Category not found")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        log.info("Deleting category with ID: {}", id);
         Optional<Category> category = categoryRepository.findById(id);
 
         if (category.isEmpty()) {
+            log.warn("Category not found for deletion with ID: {}", id);
             return ResponseEntity.notFound().build();
         }
 
         categoryRepository.deleteById(id);
+        log.info("Category deleted successfully with ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 }
-

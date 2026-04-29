@@ -8,26 +8,24 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "categories", schema = "routesandexplore")
+@Table(name = "tags", schema = "routesandexplore")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class Tags {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false, length = 200)
+    private String label;
 
-    @Column(nullable = false, length = 120, unique = true)
+    @Column(nullable = false, length = 220, unique = true)
     private String slug;
 
-    @Column(nullable = true, length = 10)
-    private String emoji;
-
-    @Column(name = "image_url", columnDefinition = "TEXT")
-    private String imageUrl;
+    @ManyToOne
+    @JoinColumn(name = "region_id")
+    private Region region;
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
@@ -35,8 +33,8 @@ public class Category {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DestinationCategory> destinationCategories;
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TagDestination> tagDestinations;
 
     @PrePersist
     protected void onCreate() {
